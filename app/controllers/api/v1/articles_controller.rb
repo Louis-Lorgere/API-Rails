@@ -1,6 +1,7 @@
 class Api::V1::ArticlesController < ApplicationController
   before_action :set_api_v1_article, only: [:show, :update, :destroy]
-  before_action :authenticate_user!, except: %i[:index]
+  before_action :authenticate_user!, except: %i[index show]
+  before_action :is_admin?, only: %i[destroy update edit]
   # GET /api/v1/articles
   def index
     @api_v1_articles = Api::V1::Article.all
@@ -16,6 +17,7 @@ class Api::V1::ArticlesController < ApplicationController
   # POST /api/v1/articles
   def create
     @api_v1_article = Api::V1::Article.new(api_v1_article_params)
+    @api_v1_article.user_id= current_user.id
 
     if @api_v1_article.save
       render json: @api_v1_article, status: :created, location: @api_v1_article
@@ -47,5 +49,11 @@ class Api::V1::ArticlesController < ApplicationController
     # Only allow a list of trusted parameters through.
     def api_v1_article_params
       params.require(:api_v1_article).permit(:title, :content)
+    end
+
+    def is_admin?
+      if @api_v1_article.user_id != current_user.id
+       render json: { error: 'Unauthorized', detail: "Not Your article" }
+      end
     end
 end
