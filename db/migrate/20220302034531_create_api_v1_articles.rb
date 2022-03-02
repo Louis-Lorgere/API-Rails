@@ -3,7 +3,7 @@ class CreateApiV1Articles < ActiveRecord::Migration[6.1]
     create_table :api_v1_articles do |t|
       t.string :title
       t.text :content
-
+      t.references :user, index: true
       t.timestamps
     end
   end
